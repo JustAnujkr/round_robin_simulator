@@ -1,0 +1,16 @@
+{
+  "name": "round_robin_simulator",
+  "version": "1.0.0",
+  "description": "Round Robin CPU Scheduling Simulator using C, Node.js and HTML",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "express": "^5.3.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}

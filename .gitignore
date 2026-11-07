@@ -1,0 +1,14 @@
+# Compiled files
+*.o
+*.out
+*.exe
+
+# macOS files
+.DS_Store
+
+# IDE files
+.vscode/
+.idea/
+
+# Executables
+round_robin

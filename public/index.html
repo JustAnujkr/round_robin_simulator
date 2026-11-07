@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Round Robin CPU Scheduling Simulator</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="page-container">
+
+        <header class="hero">
+            <div class="eyebrow">OPERATING SYSTEMS PROJECT</div>
+            <h1>ROUND ROBIN CPU SCHEDULING</h1>
+            <p>
+                Interactive CPU scheduling simulator using the Round Robin algorithm.
+            </p>
+        </header>
+
+        <div class="layout">
+
+        <aside class="sidebar">
+        <!-- PROCESS INPUT -->
+        <section class="panel">
+            <div class="section-heading">
+                <div>
+                    <span class="section-number">01</span>
+                    <h2>Process Configuration</h2>
+                </div>
+                <span class="section-note">Enter process details</span>
+            </div>
+
+            <div class="input-table-wrapper">
+                <table class="input-table">
+                    <thead>
+                        <tr>
+                            <th>Process ID</th>
+                            <th>Arrival Time (ms)</th>
+                            <th>Burst Time (ms)</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="processTable">
+                        <tr>
+                            <td>
+                                <input type="text" class="pid-input"
+                                       maxlength="31" placeholder="e.g. P1">
+                            </td>
+                            <td>
+                                <input type="number" class="arrival-input"
+                                       min="0" placeholder="0">
+                            </td>
+                            <td>
+                                <input type="number" class="burst-input"
+                                       min="1" placeholder="0">
+                            </td>
+                            <td>
+                                <button class="remove-btn" disabled>×</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="input-actions">
+                <button id="addProcessBtn" class="secondary-btn">
+                    + Add Process
+                </button>
+
+                <div class="quantum-control">
+                    <label for="quantum">Time Quantum</label>
+                    <div class="quantum-input">
+                        <input type="number" id="quantum"
+                               min="1" placeholder="0">
+                        <span>ms</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="main-action">
+                <button id="simulateBtn" class="primary-btn">
+                    <span>▶</span> SIMULATE SCHEDULING
+                </button>
+            </div>
+
+            <p id="errorMessage" class="error-message"></p>
+        </section>
+
+        <!-- CONTROLS -->
+        <section class="panel">
+            <div class="section-heading">
+                <div>
+                    <span class="section-number">07</span>
+                    <h2>Simulation Controls</h2>
+                </div>
+            </div>
+
+            <div class="controls">
+
+                <button id="playBtn" class="control-btn play-btn" disabled>
+                    ▶ Play
+                </button>
+
+                <button id="pauseBtn" class="control-btn" disabled>
+                    ❚❚ Pause
+                </button>
+
+                <button id="nextBtn" class="control-btn" disabled>
+                    Next Step →
+                </button>
+
+                <button id="resetBtn" class="control-btn reset-btn" disabled>
+                    ↻ Reset
+                </button>
+
+                <div class="speed-control">
+                    <label for="speedSelect">Animation Speed</label>
+                    <select id="speedSelect">
+                        <option value="1500">Slow</option>
+                        <option value="800" selected>Normal</option>
+                        <option value="300">Fast</option>
+                    </select>
+                </div>
+
+            </div>
+
+            <div id="completionMessage" class="completion-message">
+                Simulation has not started yet.
+            </div>
+        </section>
+
+                </aside>
+
+        <main class="main-content">
+        <!-- STATISTICS -->
+        <section class="stats-grid">
+            <div class="stat-card">
+                <span class="stat-label">TOTAL PROCESSES</span>
+                <strong id="totalProcesses">0</strong>
+            </div>
+
+            <div class="stat-card">
+                <span class="stat-label">TOTAL EXECUTION TIME</span>
+                <strong id="totalTime">0 <small>ms</small></strong>
+            </div>
+
+            <div class="stat-card">
+                <span class="stat-label">CONTEXT SWITCHES</span>
+                <strong id="totalContextSwitches">0</strong>
+            </div>
+
+            <div class="stat-card">
+                <span class="stat-label">TIME QUANTUM</span>
+                <strong id="displayQuantum">0 <small>ms</small></strong>
+            </div>
+        </section>
+
+        <!-- CPU AND GANTT CHART -->
+        <section class="panel">
+            <div class="section-heading">
+                <div>
+                    <span class="section-number">02</span>
+                    <h2>CPU Execution Visualization</h2>
+                </div>
+                <span class="live-indicator">
+                    <span class="live-dot"></span> CPU SIMULATION
+                </span>
+            </div>
+
+            <div class="cpu-display">
+                <div class="cpu-chip">
+                    <span class="cpu-icon">▣</span>
+                    <span class="cpu-title">CPU</span>
+                    <strong id="cpuProcess">IDLE</strong>
+                    <span id="cpuStatus">Waiting for simulation</span>
+                </div>
+            </div>
+
+            <div class="gantt-section">
+                <div class="subheading">
+                    <h3>Gantt Chart</h3>
+                    <span>Execution timeline (milliseconds)</span>
+                </div>
+
+                <div class="gantt-scroll">
+                    <div id="ganttChart" class="gantt-chart">
+                        <div class="gantt-placeholder">
+                            Run simulation to view the Gantt chart
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CONTEXT SWITCHING -->
+        <section class="panel">
+            <div class="section-heading">
+                <div>
+                    <span class="section-number">03</span>
+                    <h2>Context Switching</h2>
+                </div>
+                <span class="section-note">Process transition monitor</span>
+            </div>
+
+            <div class="context-display">
+                <div class="context-process">
+                    <span class="context-label">PREVIOUS PROCESS</span>
+                    <strong id="previousProcess">---</strong>
+                </div>
+
+                <div class="context-arrow" id="switchIcon">→</div>
+
+                <div class="context-process">
+                    <span class="context-label">NEXT PROCESS</span>
+                    <strong id="nextProcess">---</strong>
+                </div>
+            </div>
+
+            <div class="context-bottom">
+                <div class="context-time">
+                    <span>SWITCH STATUS</span>
+                    <strong id="switchTime">Waiting</strong>
+                </div>
+
+                <div class="context-counter">
+                    <span>TOTAL CONTEXT SWITCHES</span>
+                    <strong id="contextCount">0</strong>
+                </div>
+            </div>
+
+            <p id="contextRemark" class="context-remark">
+                Context-switch information will appear during execution.
+            </p>
+        </section>
+
+        <!-- EXECUTION TIMELINE -->
+        <section class="panel">
+            <div class="section-heading">
+                <div>
+                    <span class="section-number">04</span>
+                    <h2>Execution Timeline</h2>
+                </div>
+                <span class="section-note">Step-by-step process details</span>
+            </div>
+
+            <div class="timeline-wrapper">
+                <table class="timeline-table">
+                    <thead>
+                        <tr>
+                            <th>Step</th>
+                            <th>Process</th>
+                            <th>Start</th>
+                            <th>End</th>
+                            <th>Duration</th>
+                            <th>Remaining</th>
+                            <th>Remarks</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="timelineBody">
+                        <tr>
+                            <td colspan="7" class="empty-row">
+                                Execution details will appear here.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- READY QUEUE AND REMAINING TIME -->
+        <section class="queue-grid">
+
+            <div class="panel">
+                <div class="section-heading">
+                    <div>
+                        <span class="section-number">05</span>
+                        <h2>Ready Queue</h2>
+                    </div>
+                </div>
+
+                <div id="readyQueue" class="ready-queue">
+                    <span class="empty-text">Queue is empty</span>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="section-heading">
+                    <div>
+                        <span class="section-number">06</span>
+                        <h2>Remaining Burst Time</h2>
+                    </div>
+                </div>
+
+                <div id="remainingTimes" class="remaining-list">
+                    <span class="empty-text">No processes loaded</span>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- LOGS -->
+        <section class="panel">
+            <div class="section-heading">
+                <div>
+                    <span class="section-number">08</span>
+                    <h2>Logs</h2>
+                </div>
+                <span class="section-note">Live scheduler events</span>
+            </div>
+
+            <div id="logsBox" class="logs-box">
+                <div class="log-line log-empty">
+                    Logs will appear here during execution.
+                </div>
+            </div>
+        </section>
+
+        <!-- RESULTS (shown after execution ends) -->
+        <section class="panel hidden" id="resultsSection">
+            <div class="section-heading">
+                <div>
+                    <span class="section-number">09</span>
+                    <h2>Performance Results</h2>
+                </div>
+                <span class="section-note">AT, BT, CT, TAT and WAT per process</span>
+            </div>
+
+            <div class="timeline-wrapper">
+                <table class="timeline-table results-table">
+                    <thead>
+                        <tr>
+                            <th>Process</th>
+                            <th>AT</th>
+                            <th>BT</th>
+                            <th>CT</th>
+                            <th>TAT</th>
+                            <th>WAT</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resultsBody"></tbody>
+                </table>
+            </div>
+
+            <div class="avg-grid">
+                <div class="context-counter">
+                    <span>AVG TAT</span>
+                    <strong id="avgTat">0</strong>
+                </div>
+                <div class="context-counter">
+                    <span>AVG WAT</span>
+                    <strong id="avgWat">0</strong>
+                </div>
+            </div>
+
+            <p class="context-remark">
+                AT = Arrival Time, BT = Burst Time, CT = Completion Time,
+                TAT = CT − AT, WAT = TAT − BT.
+            </p>
+        </section>
+
+        </main>
+
+        </div>
+
+        <footer>
+            <p>ROUND ROBIN CPU SCHEDULING SIMULATOR</p>
+            <span>Operating Systems Project</span>
+        </footer>
+
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
