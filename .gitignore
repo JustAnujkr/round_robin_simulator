@@ -12,3 +12,6 @@
 
 # Executables
 round_robin
+node_modules/
+.env
+.DS_Store
